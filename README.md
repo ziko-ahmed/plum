@@ -276,23 +276,6 @@ cd frontend && npm run dev
 | `GET` | `/api/claims` | list all claims |
 | `GET` | `/api/claims/{claim_id}` | get a single claim with full details |
 
-## Test Cases
-
-10 test cases in `test_cases.json`:
-
-| Case | Scenario | Expected |
-|------|----------|----------|
-| TC001 | simple consultation, all valid | approved |
-| TC002 | root canal + teeth whitening | partial (whitening excluded) |
-| TC003 | claim exceeds per-claim limit | rejected |
-| TC004 | no prescription submitted | rejected |
-| TC005 | diabetes during waiting period | rejected |
-| TC006 | ayurvedic treatment | approved |
-| TC007 | mri without pre-authorization | rejected |
-| TC008 | 3 claims on the same day | manual review |
-| TC009 | weight loss treatment | rejected |
-| TC010 | network hospital, cashless | approved with discount |
-
 ## Decision Logic
 
 the rule engine checks 6 things in order. if any check fails, it stops:
