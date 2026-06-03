@@ -557,13 +557,13 @@ def _check_partial_coverage(documents: list[ExtractedDocument]) -> dict:
 
     for doc in documents:
         for item in doc.line_items:
-            item_name = item.get("item", "").lower()
-            amount = item.get("amount", 0)
+            item_name = (item.get("item") or "").lower()
+            amount = item.get("amount") or 0
             is_excluded = False
 
             for exclusion in exclusions:
                 if _text_matches(item_name, exclusion):
-                    rejected.append(f"{item.get('item', 'unknown')} - {exclusion}")
+                    rejected.append(f"{item.get('item') or 'unknown'} - {exclusion}")
                     is_excluded = True
                     break
 
@@ -572,7 +572,7 @@ def _check_partial_coverage(documents: list[ExtractedDocument]) -> dict:
                 if _text_matches(proc.lower(), item_name) or _text_matches(item_name, proc.lower()):
                     for exclusion in exclusions:
                         if _text_matches(proc.lower(), exclusion):
-                            if item.get("item") not in [r.split(" - ")[0] for r in rejected]:
+                            if (item.get("item") or "unknown") not in [r.split(" - ")[0] for r in rejected]:
                                 rejected.append(f"{proc} - {exclusion}")
                             is_excluded = True
                             break
