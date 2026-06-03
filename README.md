@@ -297,3 +297,15 @@ co-pay (10% on consultations) and network discounts (20%) are applied during the
 - medical necessity check verifies a diagnosis exists
 - groq model: `llama-3.1-8b-instant`
 - all amounts in inr
+
+## Upload Handling in Deployment (Free Tier)
+
+This app is designed to run perfectly on free-tier platforms like Render, which use an **ephemeral filesystem** (meaning the `uploads/` folder is wiped whenever the server goes to sleep or restarts).
+
+**Why this works without data loss:**
+1. When a user uploads a document, it is temporarily saved locally.
+2. The backend immediately runs OCR and extracts structured data.
+3. The claim is adjudicated, and the final *results, decisions, and reasoning* are permanently saved to MongoDB.
+4. The frontend only displays these final results, so it doesn't need to serve the original image back to the user.
+
+If you scale this to a production environment where you *do* want to view the original images in the dashboard later, you can easily swap the local save logic in `routes/claims.py` to upload files to a persistent blob storage service like AWS S3 or Cloudinary.
