@@ -24,8 +24,11 @@ export default function RootLayout({
               <Link href="/" className="nav-link">
                 Dashboard
               </Link>
-              <Link href="/submit" className="nav-link active">
+              <Link href="/submit" className="nav-link">
                 New Claim
+              </Link>
+              <Link href="/admin" className="nav-link">
+                Admin
               </Link>
             </div>
           </div>

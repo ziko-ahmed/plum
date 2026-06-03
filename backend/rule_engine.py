@@ -15,25 +15,19 @@ from models import (
     StepResult, Decision
 )
 
-# load policy terms once at import time
-policy_path = os.path.join(os.path.dirname(__file__), "..", "policy_terms.json")
-if not os.path.exists(policy_path):
-    policy_path = os.path.join(os.path.dirname(__file__), "policy_terms.json")
-
-with open(policy_path, "r") as f:
-    POLICY = json.load(f)
+# the policy terms are now fetched from mongodb dynamically and passed in
 
 
 # -- step 1: eligibility check --
 
-def check_eligibility(submission: ClaimSubmission, documents: list[ExtractedDocument]) -> StepResult:
+def check_eligibility(submission: ClaimSubmission, documents: list[ExtractedDocument], policy: dict) -> StepResult:
     """
     checks if the member is eligible:
     - policy must be active on treatment date
     - waiting periods must be satisfied
     """
     treatment_date = _parse_date(submission.treatment_date)
-    policy_start = _parse_date(POLICY["effective_date"])
+    policy_start = _parse_date(policy["effective_date"])
 
     # is the policy active?
     if treatment_date < policy_start:
@@ -47,7 +41,7 @@ def check_eligibility(submission: ClaimSubmission, documents: list[ExtractedDocu
     # check initial waiting period (30 days)
     if submission.member_join_date:
         join_date = _parse_date(submission.member_join_date)
-        initial_waiting = POLICY["waiting_periods"]["initial_waiting"]
+        initial_waiting = policy["waiting_periods"]["initial_waiting"]
         if treatment_date < join_date + timedelta(days=initial_waiting):
             return StepResult(
                 step_name="eligibility",
@@ -59,7 +53,7 @@ def check_eligibility(submission: ClaimSubmission, documents: list[ExtractedDocu
         # check specific ailment waiting periods
         for doc in documents:
             diagnosis = (doc.diagnosis or "").lower()
-            specific = POLICY["waiting_periods"].get("specific_ailments", {})
+            specific = policy["waiting_periods"].get("specific_ailments", {})
             for condition, days in specific.items():
                 if condition.replace("_", " ") in diagnosis:
                     if treatment_date < join_date + timedelta(days=days):
@@ -139,13 +133,13 @@ def check_documents(documents: list[ExtractedDocument], submission: ClaimSubmiss
 
 # -- step 3: coverage check --
 
-def check_coverage(documents: list[ExtractedDocument], submission: ClaimSubmission) -> StepResult:
+def check_coverage(documents: list[ExtractedDocument], submission: ClaimSubmission, policy: dict) -> StepResult:
     """
     checks if the treatment/service is covered under the policy:
     - not in the exclusions list
     - pre-authorization obtained if needed
     """
-    exclusions = [e.lower() for e in POLICY["exclusions"]]
+    exclusions = [e.lower() for e in policy["exclusions"]]
 
     for doc in documents:
         diagnosis = (doc.diagnosis or "").lower()
@@ -187,7 +181,7 @@ def check_coverage(documents: list[ExtractedDocument], submission: ClaimSubmissi
 
 # -- step 4: limit check --
 
-def check_limits(submission: ClaimSubmission, documents: list[ExtractedDocument], effective_amount: float = None) -> tuple[StepResult, dict]:
+def check_limits(submission: ClaimSubmission, documents: list[ExtractedDocument], effective_amount: float, policy: dict) -> tuple[StepResult, dict]:
     """
     checks claim amount against policy limits:
     - per-claim limit (5000)
@@ -196,7 +190,7 @@ def check_limits(submission: ClaimSubmission, documents: list[ExtractedDocument]
     also calculates co-pay and network discounts.
     returns (step_result, deductions_dict).
     """
-    coverage = POLICY["coverage_details"]
+    coverage = policy["coverage_details"]
     per_claim_limit = coverage["per_claim_limit"]
     annual_limit = coverage["annual_limit"]
     deductions = {}
@@ -236,7 +230,7 @@ def check_limits(submission: ClaimSubmission, documents: list[ExtractedDocument]
 
     # calculate co-pay on consultation fees (skip for alt med and cashless network)
     copay_amount = 0
-    is_cashless_network = submission.cashless_request and submission.hospital_name in POLICY.get("network_hospitals", [])
+    is_cashless_network = submission.cashless_request and submission.hospital_name in policy.get("network_hospitals", [])
     
     if not is_alt_med and not is_cashless_network:
         has_consultation = any(
@@ -252,7 +246,7 @@ def check_limits(submission: ClaimSubmission, documents: list[ExtractedDocument]
 
     # network discount
     network_discount = 0
-    if submission.hospital_name and submission.hospital_name in POLICY["network_hospitals"]:
+    if submission.hospital_name and submission.hospital_name in policy.get("network_hospitals", []):
         discount_pct = coverage["consultation_fees"]["network_discount"] / 100
         network_discount = round(claim_amount * discount_pct)
         deductions["network_discount"] = network_discount
@@ -321,7 +315,7 @@ def check_fraud(submission: ClaimSubmission) -> StepResult:
 
 # -- main adjudication function --
 
-def adjudicate(submission: ClaimSubmission, documents: list[ExtractedDocument]) -> AdjudicationResult:
+def adjudicate(submission: ClaimSubmission, documents: list[ExtractedDocument], policy: dict) -> AdjudicationResult:
     """
     runs all 6 steps in order and produces a final decision.
     this is the main function that ties everything together.
@@ -332,7 +326,7 @@ def adjudicate(submission: ClaimSubmission, documents: list[ExtractedDocument]) 
     deductions = {}
 
     # step 1: eligibility
-    eligibility = check_eligibility(submission, documents)
+    eligibility = check_eligibility(submission, documents, policy)
     steps.append(eligibility)
     if not eligibility.passed:
         return AdjudicationResult(
@@ -360,11 +354,11 @@ def adjudicate(submission: ClaimSubmission, documents: list[ExtractedDocument]) 
         )
 
     # step 3: coverage
-    coverage = check_coverage(documents, submission)
+    coverage = check_coverage(documents, submission, policy)
     steps.append(coverage)
 
     # check for partial coverage (some items covered, some not)
-    partial_items = _check_partial_coverage(documents)
+    partial_items = _check_partial_coverage(documents, policy)
     if partial_items["rejected"]:
         rejected_items = partial_items["rejected"]
         if partial_items["approved_amount"] > 0:
@@ -401,7 +395,7 @@ def adjudicate(submission: ClaimSubmission, documents: list[ExtractedDocument]) 
     effective_amount = submission.claim_amount
     if rejected_items:
         effective_amount = partial_items["approved_amount"]
-    limits, deductions = check_limits(submission, documents, effective_amount)
+    limits, deductions = check_limits(submission, documents, effective_amount, policy)
     steps.append(limits)
     if not limits.passed:
         return AdjudicationResult(
@@ -467,7 +461,7 @@ def adjudicate(submission: ClaimSubmission, documents: list[ExtractedDocument]) 
 
     # check for cashless
     cashless_note = ""
-    if submission.cashless_request and submission.hospital_name in POLICY.get("network_hospitals", []):
+    if submission.cashless_request and submission.hospital_name in policy.get("network_hospitals", []):
         cashless_note = ". cashless approved at network hospital"
 
     return AdjudicationResult(
@@ -539,14 +533,14 @@ def _text_matches(text: str, exclusion: str) -> bool:
     return False
 
 
-def _check_partial_coverage(documents: list[ExtractedDocument]) -> dict:
+def _check_partial_coverage(documents: list[ExtractedDocument], policy: dict) -> dict:
     """
     check if some items are covered and some aren't.
     returns {"approved_amount": X, "rejected": ["item1", "item2"]}
     """
     approved_amount = 0
     rejected = []
-    exclusions = [e.lower() for e in POLICY["exclusions"]]
+    exclusions = [e.lower() for e in policy["exclusions"]]
 
     for doc in documents:
         diagnosis = (doc.diagnosis or "").lower()

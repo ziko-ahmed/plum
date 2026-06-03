@@ -13,7 +13,7 @@ from typing import Optional
 import json
 import os
 
-from config import get_db, UPLOAD_DIR
+from config import get_db, UPLOAD_DIR, get_policy
 from models import (
     ClaimSubmission, ClaimRecord, ExtractedDocument,
     AdjudicationResult, Decision
@@ -87,7 +87,8 @@ async def submit_claim(
         ))
 
     # run the rule engine
-    result = adjudicate(submission, extracted_docs)
+    policy = await get_policy()
+    result = adjudicate(submission, extracted_docs, policy)
     result.claim_id = claim_id
 
     # store in mongodb
@@ -144,7 +145,8 @@ async def submit_test_claim(data: dict):
     extracted = extract_from_claim_data(input_data)
 
     # run rule engine
-    result = adjudicate(submission, [extracted])
+    policy = await get_policy()
+    result = adjudicate(submission, [extracted], policy)
     result.claim_id = claim_id
 
     # store in mongodb

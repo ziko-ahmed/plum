@@ -41,3 +41,36 @@ def close_mongo():
 def get_db():
     """returns the database instance"""
     return db
+
+
+async def get_policy():
+    """
+    returns the policy from mongodb.
+    if it doesn't exist, reads from policy_terms.json, inserts it, and returns it.
+    """
+    if db is None:
+        # fallback for testing if db isn't connected
+        import json, os
+        policy_path = os.path.join(os.path.dirname(__file__), "..", "policy_terms.json")
+        if not os.path.exists(policy_path):
+            policy_path = os.path.join(os.path.dirname(__file__), "policy_terms.json")
+        with open(policy_path, "r") as f:
+            return json.load(f)
+
+    policies = db["policies"]
+    policy = await policies.find_one({"_id": "master_policy"})
+    if policy:
+        return policy
+
+    # seed it
+    import json, os
+    policy_path = os.path.join(os.path.dirname(__file__), "..", "policy_terms.json")
+    if not os.path.exists(policy_path):
+        policy_path = os.path.join(os.path.dirname(__file__), "policy_terms.json")
+    with open(policy_path, "r") as f:
+        default_policy = json.load(f)
+    
+    default_policy["_id"] = "master_policy"
+    await policies.insert_one(default_policy)
+    return default_policy
+

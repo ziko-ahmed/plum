@@ -11,6 +11,7 @@ from contextlib import asynccontextmanager
 
 from config import connect_to_mongo, close_mongo
 from routes.claims import router as claims_router
+from routes.admin import router as admin_router
 
 
 import asyncio
@@ -65,6 +66,7 @@ app.add_middleware(
 
 # mount routes
 app.include_router(claims_router)
+app.include_router(admin_router)
 
 
 @app.get("/")

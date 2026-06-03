@@ -57,3 +57,22 @@ export async function getClaims() {
 export async function getClaim(claimId: string) {
   return request(`/api/claims/${claimId}`);
 }
+
+// admin: get current policy configuration
+export async function getPolicy(password: string) {
+  return request("/api/admin/policy", {
+    headers: { "x-admin-password": password }
+  });
+}
+
+// admin: update policy configuration
+export async function updatePolicy(password: string, policy: Record<string, unknown>) {
+  return request("/api/admin/policy", {
+    method: "PUT",
+    headers: { 
+      "Content-Type": "application/json",
+      "x-admin-password": password 
+    },
+    body: JSON.stringify(policy),
+  });
+}
