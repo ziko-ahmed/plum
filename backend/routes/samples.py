@@ -27,11 +27,13 @@ def random_date_str():
     d = datetime.now() - timedelta(days=days_ago)
     return d.strftime("%d/%m/%Y")
 
+@router.head("/approved")
 @router.get("/approved")
 async def get_approved_sample():
     diagnosis, items, consult_fee = random.choice(APPROVED_DIAGNOSES)
     return generate_pdf_response("Apollo Hospitals", "Dr. S. Sharma", diagnosis, items, consult_fee, "Rajesh Kumar", "EMP001")
 
+@router.head("/rejected")
 @router.get("/rejected")
 async def get_rejected_sample():
     diagnosis, items, consult_fee = random.choice(REJECTED_DIAGNOSES)
