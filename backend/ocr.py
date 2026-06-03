@@ -27,9 +27,25 @@ def extract_text_from_image(file_path: str) -> str:
 
 def extract_text_from_pdf(file_path: str) -> str:
     """
-    convert each page of a pdf to an image, then run ocr on each page.
-    returns all pages concatenated together.
+    first try native text extraction (fast and accurate for digital pdfs).
+    if it fails (e.g., scanned image), fallback to ocr.
     """
+    try:
+        from pypdf import PdfReader
+        reader = PdfReader(file_path)
+        text = ""
+        for i, page in enumerate(reader.pages):
+            page_text = page.extract_text()
+            if page_text:
+                text += f"--- page {i + 1} ---\n{page_text.strip()}\n\n"
+        
+        # if we found a good amount of text, return it
+        if len(text.strip()) > 50:
+            return text.strip()
+    except Exception as e:
+        print(f"native pdf extraction failed: {e}")
+
+    # fallback to OCR
     try:
         pages = convert_from_path(file_path)
         all_text = []
