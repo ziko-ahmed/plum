@@ -4,13 +4,9 @@ services:
   # -------------------------
   - type: web
     name: plum-backend
-    env: python
+    env: docker
     rootDir: backend
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.14.0 # Match your local python version
       - key: GROQ_API_KEY
         sync: false # You will enter this manually in the Render dashboard
       - key: MONGO_URI
