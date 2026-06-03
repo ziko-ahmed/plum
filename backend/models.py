@@ -23,7 +23,7 @@ class Decision(str, Enum):
 
 class ExtractedDocument(BaseModel):
     """structured data pulled from a single document by the AI"""
-    document_type: str = ""                    # "prescription", "bill", "report", "pharmacy_bill"
+    document_type: Optional[str] = None        # "prescription", "bill", "report", "pharmacy_bill"
     doctor_name: Optional[str] = None
     doctor_registration: Optional[str] = None
     clinic_or_hospital: Optional[str] = None
