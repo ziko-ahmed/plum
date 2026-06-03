@@ -26,7 +26,7 @@ async def fetch_policy():
 async def update_policy(new_policy: dict, _ = Depends(verify_admin)):
     """update the policy configuration (requires admin password in headers)"""
     db = get_db()
-    if not db:
+    if db is None:
         raise HTTPException(status_code=500, detail="Database not connected")
     
     # keep the _id the same
