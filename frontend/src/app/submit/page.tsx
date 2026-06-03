@@ -311,8 +311,8 @@ export default function SubmitPage() {
             <span>Documents</span>
             <div style={{ fontSize: "14px", fontWeight: "normal", display: "flex", gap: "16px" }}>
               <span style={{ color: "var(--text-muted)" }}>Need test files?</span>
-              <a href="/samples/sample_approved.pdf" download style={{ color: "var(--primary)", textDecoration: "underline" }}>Approved Claim</a>
-              <a href="/samples/sample_rejected.pdf" download style={{ color: "var(--primary)", textDecoration: "underline" }}>Rejected Claim</a>
+              <a href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/samples/approved`} style={{ color: "var(--primary)", textDecoration: "underline" }}>Approved Claim</a>
+              <a href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/samples/rejected`} style={{ color: "var(--primary)", textDecoration: "underline" }}>Rejected Claim</a>
             </div>
           </div>
           <div
