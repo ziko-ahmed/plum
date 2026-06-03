@@ -1,0 +1,35 @@
+services:
+  # -------------------------
+  # 1. Backend (FastAPI)
+  # -------------------------
+  - type: web
+    name: plum-backend
+    env: python
+    rootDir: backend
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.14.0 # Match your local python version
+      - key: GROQ_API_KEY
+        sync: false # You will enter this manually in the Render dashboard
+      - key: MONGO_URI
+        sync: false # You will enter this manually in the Render dashboard
+
+  # -------------------------
+  # 2. Frontend (Next.js)
+  # -------------------------
+  - type: web
+    name: plum-frontend
+    env: node
+    rootDir: frontend
+    buildCommand: "npm install && npm run build"
+    startCommand: "npm start"
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          type: web
+          name: plum-backend
+          envVarKey: RENDER_EXTERNAL_URL
