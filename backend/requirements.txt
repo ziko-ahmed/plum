@@ -11,3 +11,4 @@ groq
 python-dotenv
 pydantic
 pypdf
+reportlab
