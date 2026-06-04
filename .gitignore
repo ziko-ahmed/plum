@@ -22,3 +22,5 @@ __pycache__/
 # Project Specific
 test_results*.json
 test_results/
+interview_prep.md
+video_script.md

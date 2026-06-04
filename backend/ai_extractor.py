@@ -16,6 +16,15 @@ client = Groq(api_key=GROQ_API_KEY)
 EXTRACTION_PROMPT = """you are a medical document reader. given the raw text from a medical document,
 extract the following fields into a json object. if a field is not present, use null.
 
+FEW-SHOT EXAMPLES:
+[Example 1 - Prescription]
+RAW TEXT: "Apollo Hospital Dr. Smith 12/05/2026 Patient: John Doe Diagnosis: Viral Fever Rx: Paracetamol 500mg"
+JSON: {"document_type": "prescription", "doctor_name": "Dr. Smith", "clinic_or_hospital": "Apollo Hospital", "patient_name": "John Doe", "treatment_date": "2026-05-12", "diagnosis": "Viral Fever", "medicines": ["Paracetamol 500mg"]}
+
+[Example 2 - Bill]
+RAW TEXT: "Elite Clinic Invoice Date: 01/01/2026 Patient: Mary Jane Root Canal - 4000 INR Total Due: 4000 INR"
+JSON: {"document_type": "bill", "clinic_or_hospital": "Elite Clinic", "patient_name": "Mary Jane", "treatment_date": "2026-01-01", "line_items": [{"item": "Root Canal", "amount": 4000}], "total_amount": 4000.0}
+
 return ONLY valid json, no extra text:
 
 {
@@ -52,7 +61,7 @@ def extract_from_text(raw_text: str) -> ExtractedDocument:
             messages=[
                 {
                     "role": "system",
-                    "content": "you extract structured data from medical documents. respond only with valid json."
+                    "content": "you extract structured data from medical documents. you use few-shot prompting logic to match the schema exactly. respond only with valid json."
                 },
                 {
                     "role": "user",

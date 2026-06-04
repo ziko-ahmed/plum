@@ -12,3 +12,4 @@ python-dotenv
 pydantic
 pypdf
 reportlab
+img2pdf

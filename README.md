@@ -29,14 +29,22 @@ node --version
 brew install node
 ```
 
-**tesseract** (for reading documents)
+**tesseract & poppler** (for reading documents and PDFs)
+**For Mac (Homebrew):**
 ```bash
 # install via homebrew
 brew install tesseract
+brew install poppler
 
 # verify it works
 tesseract --version
 ```
+
+**For Windows:**
+1. Download and install [Tesseract OCR for Windows](https://github.com/UB-Mannheim/tesseract/wiki).
+2. Download [Poppler for Windows](https://github.com/oschwartz10612/poppler-windows/releases/).
+3. Extract Poppler and add the `bin` folder of both Poppler and Tesseract to your System PATH.
+4. Verify by opening a new command prompt and running `tesseract --version`.
 
 **mongodb** (pick one option)
 
@@ -73,6 +81,7 @@ python3 -m venv venv
 
 # activate it (you need to do this every time you open a new terminal)
 source venv/bin/activate
+# (On Windows, run this instead: venv\Scripts\activate)
 
 # create your .env file
 cp .env.example .env
