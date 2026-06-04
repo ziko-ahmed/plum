@@ -34,7 +34,7 @@ flowchart TD
     A2 --> OUT
 ```
 
-## How It Works (Plain English)
+## How It Works
 
 1. **User uploads** their medical bills, prescriptions, and reports
 2. **Tesseract OCR** reads the images/PDFs and pulls out raw text
