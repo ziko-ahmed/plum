@@ -13,3 +13,4 @@ pydantic
 pypdf
 reportlab
 img2pdf
+requests
