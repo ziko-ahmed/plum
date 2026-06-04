@@ -1,7 +1,5 @@
 # Co-pay & Amount Calculation Flowchart
 
-# Co-pay & Amount Calculation Flowchart
-
 ```mermaid
 flowchart TD
     subgraph "Limits & Deductions Logic"
