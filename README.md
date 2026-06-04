@@ -48,14 +48,14 @@ tesseract --version
 
 **mongodb** (pick one option)
 
-option a — install locally:
+option a --> install locally:
 ```bash
 brew tap mongodb/brew
 brew install mongodb-community
 brew services start mongodb-community
 ```
 
-option b — use mongodb atlas (free cloud):
+option b --> use mongodb atlas (free cloud):
 1. go to https://cloud.mongodb.com
 2. create a free cluster
 3. get your connection string (looks like `mongodb+srv://user:pass@cluster.mongodb.net/plum_claims`)
@@ -64,7 +64,7 @@ option b — use mongodb atlas (free cloud):
 1. go to https://console.groq.com
 2. sign up / log in
 3. go to api keys and create one
-4. copy it — you'll need it in the next step
+4. copy it --> you'll need it in the next step
 
 ---
 
@@ -145,9 +145,9 @@ leave this terminal running too.
 
 open http://localhost:3000 in your browser. that's it.
 
-- **dashboard** is at `/` — shows all claims
-- **submit a claim** at `/submit` — fill the form, upload documents, get a decision
-- **claim details** at `/claims/{id}` — see full breakdown of any claim
+- **dashboard** is at `/` --> shows all claims
+- **submit a claim** at `/submit` --> fill the form, upload documents, get a decision
+- **claim details** at `/claims/{id}` --> see full breakdown of any claim
 
 the backend api docs are at http://localhost:8000/docs if you want to test endpoints directly.
 
@@ -155,7 +155,7 @@ the backend api docs are at http://localhost:8000/docs if you want to test endpo
 
 ### Quick Reference (all 3 commands)
 
-terminal 1 (mongodb — skip if using atlas):
+terminal 1 (mongodb --> skip if using atlas):
 ```bash
 brew services start mongodb-community
 ```
@@ -256,12 +256,12 @@ plum/
 |------|-------------|
 | `main.py` | starts the fastapi server, sets up cors so the frontend can talk to it, connects to mongodb on startup |
 | `config.py` | loads env vars (groq key, mongo url), creates the mongodb connection, provides a `get_db()` helper |
-| `models.py` | defines all data shapes — what a claim looks like, what extracted data looks like, what a decision looks like |
+| `models.py` | defines all data shapes --> what a claim looks like, what extracted data looks like, what a decision looks like |
 | `ocr.py` | takes an image or pdf, runs tesseract ocr, returns raw text |
 | `ai_extractor.py` | takes raw ocr text, sends it to groq with a structured prompt, parses the response into clean json |
-| `rule_engine.py` | the core logic — runs 6 checks in order and returns approve/reject with detailed reasoning |
-| `routes/claims.py` | api endpoints — POST to submit a claim, GET to list or view claims |
-| `policy_terms.json` | the insurance policy config — limits, exclusions, waiting periods, network hospitals |
+| `rule_engine.py` | the core logic --> runs 6 checks in order and returns approve/reject with detailed reasoning |
+| `routes/claims.py` | api endpoints --> POST to submit a claim, GET to list or view claims |
+| `policy_terms.json` | the insurance policy config --> limits, exclusions, waiting periods, network hospitals |
 
 ### Frontend
 
@@ -269,9 +269,9 @@ plum/
 |------|-------------|
 | `layout.tsx` | wraps every page with a nav bar |
 | `page.tsx` | dashboard with stat cards and a list of all claims |
-| `submit/page.tsx` | form for submitting claims — member info, amounts, drag-and-drop file upload |
+| `submit/page.tsx` | form for submitting claims --> member info, amounts, drag-and-drop file upload |
 | `claims/[id]/page.tsx` | detail view showing decision, amounts, deductions, and step-by-step verification timeline |
-| `globals.css` | the design system — clean and minimal, neutral colors with semantic status colors |
+| `globals.css` | the design system --> clean and minimal, neutral colors with semantic status colors |
 | `api.ts` | all backend calls go through here |
 | `types.ts` | typescript types shared across components |
 
@@ -289,20 +289,20 @@ plum/
 
 the rule engine checks 6 things in order. if any check fails, it stops:
 
-1. **eligibility** — policy active? waiting period passed?
-2. **documents** — prescription present? doctor reg valid? dates match?
-3. **coverage** — treatment covered? not excluded? pre-auth needed?
-4. **limits** — under per-claim cap (5000)? under annual cap (50000)?
-5. **medical necessity** — diagnosis justifies treatment?
-6. **fraud** — multiple claims same day? high amounts?
+1. **eligibility** --> policy active? waiting period passed?
+2. **documents** --> prescription present? doctor reg valid? dates match?
+3. **coverage** --> treatment covered? not excluded? pre-auth needed?
+4. **limits** --> under per-claim cap (5000)? under annual cap (50000)?
+5. **medical necessity** --> diagnosis justifies treatment?
+6. **fraud** --> multiple claims same day? high amounts?
 
 co-pay (10% on consultations) and network discounts (20%) are applied during the limits step.
 
 ## Assumptions
 
 - doctor registration numbers follow format: `XX/NNNNN/YYYY`
-- name matching is fuzzy — checks if any word overlaps
-- fraud detection is basic — checks frequency and amount thresholds
+- name matching is fuzzy --> checks if any word overlaps
+- fraud detection is basic --> checks frequency and amount thresholds
 - medical necessity check verifies a diagnosis exists
 - groq model: `llama-3.1-8b-instant`
 - all amounts in inr
@@ -326,21 +326,21 @@ If you scale this to a production environment where you *do* want to view the or
 
 ```mermaid
 graph TB
-    subgraph "Frontend — Next.js"
+    subgraph "Frontend --> Next.js"
         UI["🖥️ Web Interface"]
         DASH["Dashboard\n(all claims + stats)"]
         FORM["Claim Submission\n(upload + member info)"]
         DETAIL["Claim Detail\n(decision + timeline)"]
     end
 
-    subgraph "Backend — FastAPI"
+    subgraph "Backend --> FastAPI"
         API["🔌 REST API"]
         OCR["📄 Tesseract OCR\n(image → text)"]
         AI["🤖 Groq AI\n(text → structured data)"]
         RULES["⚙️ Rule Engine\n(6-step adjudication)"]
     end
 
-    subgraph "Data — MongoDB"
+    subgraph "Data --> MongoDB"
         DB["🗄️ Claims Collection"]
         POLICY["📋 Policy Config"]
     end
