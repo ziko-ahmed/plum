@@ -7,14 +7,14 @@ from config import get_db, get_policy
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
 # simple password protection for the demo
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "plum2026")
+ADMIN_PASSWORD = "plum2026"
 
 def verify_admin(x_admin_password: str = Header(default="")):
     if x_admin_password != ADMIN_PASSWORD:
         raise HTTPException(status_code=401, detail="Unauthorized: invalid admin password")
 
 @router.get("/policy")
-async def fetch_policy():
+async def fetch_policy(_ = Depends(verify_admin)):
     """fetch the current policy configuration"""
     policy = await get_policy()
     # remove the _id so it's clean json
