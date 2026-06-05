@@ -2,175 +2,55 @@
 
 Automated system for processing and deciding on OPD insurance claims. Upload medical documents, the system reads them, checks against policy rules, and returns an approve/reject decision with reasoning.
 
-# Video Explanation & Demo: https://drive.google.com/file/d/1J6HK4wxk0uN2QRXaPSfYOfg6jPq2AjLr/view?usp=drive_link
+# Video Explanation & Demo: [Click Here](https://drive.google.com/file/d/1J6HK4wxk0uN2QRXaPSfYOfg6jPq2AjLr/view?usp=drive_link)
 
-## Running the Project
+## Local development (Mac/Linux)
 
-need 3 things running at the same time: mongodb, the backend, and the frontend.
-here is everything step by step.
+Built and run locally requiring Python and Node.js. Three rules will save you an afternoon:
 
----
-
-### Step 1: Install Prerequisites
-
-**python** (3.10 or higher)
-```bash
-# check if you have it
-python3 --version
-
-# if not, install via homebrew
-brew install python
-```
-
-**node.js** (18 or higher)
-```bash
-# check if you have it
-node --version
-
-# if not, install via homebrew
-brew install node
-```
-
-**tesseract & poppler** (for reading documents and PDFs)
-**For Mac (Homebrew):**
-```bash
-# install via homebrew
-brew install tesseract
-brew install poppler
-
-# verify it works
-tesseract --version
-```
-
-**For Windows:**
-1. Download and install [Tesseract OCR for Windows](https://github.com/UB-Mannheim/tesseract/wiki).
-2. Download [Poppler for Windows](https://github.com/oschwartz10612/poppler-windows/releases/).
-3. Extract Poppler and add the `bin` folder of both Poppler and Tesseract to your System PATH.
-4. Verify by opening a new command prompt and running `tesseract --version`.
-
-**mongodb** (pick one option)
-
-option a --> install locally:
-```bash
-brew tap mongodb/brew
-brew install mongodb-community
-brew services start mongodb-community
-```
-
-option b --> use mongodb atlas (free cloud):
-1. go to https://cloud.mongodb.com
-2. create a free cluster
-3. get your connection string (looks like `mongodb+srv://user:pass@cluster.mongodb.net/plum_claims`)
-
-**groq api key** (free)
-1. go to https://console.groq.com
-2. sign up / log in
-3. go to api keys and create one
-4. copy it --> you'll need it in the next step
-
----
-
-### Step 2: Set Up the Backend
-
-open a terminal:
+1. **Install Prerequisites first.** You need Python 3.10+, Node.js 18+, Tesseract, and Poppler. You also need a free Groq API key from https://console.groq.com and a MongoDB URI (e.g., from MongoDB Atlas).
+2. **Set up the Backend in its own environment.** Navigate to the `backend` folder, create a Python virtual environment (`python3 -m venv venv`), activate it, and install dependencies (`pip install -r requirements.txt`). Create a `.env` file from `.env.example` with your keys.
+3. **Run two terminals simultaneously.** You need one for the backend server and one for the Next.js frontend.
 
 ```bash
-# go to the backend folder
+# Terminal 1: Start Backend
 cd backend
-
-# create a virtual environment
 python3 -m venv venv
-
-# activate it (you need to do this every time you open a new terminal)
 source venv/bin/activate
-# (On Windows, run this instead: venv\Scripts\activate)
-
-# create your .env file
-cp .env.example .env
-```
-
-now open `backend/.env` in your editor and fill in your values:
-```
-GROQ_API_KEY=gsk_your_actual_key_here
-MONGODB_URI=mongodb://localhost:27017
-DB_NAME=plum_claims
-UPLOAD_DIR=uploads
-```
-(if using atlas, replace the mongodb uri with your atlas connection string)
-
-install python dependencies (inside the venv):
-```bash
 pip install -r requirements.txt
-```
-
-start the backend server:
-```bash
+cp .env.example .env
 uvicorn main:app --reload --port 8000
-```
 
-you should see:
-```
-connected to mongodb: plum_claims
-INFO:     Uvicorn running on http://127.0.0.1:8000
-```
-
-leave this terminal running.
-
----
-
-### Step 3: Set Up the Frontend
-
-open a **second terminal**:
-
-```bash
-# go to the frontend folder
+# Terminal 2: Start Frontend
 cd frontend
-
-# install dependencies
 npm install
-
-# start the dev server
 npm run dev
 ```
 
-you should see:
-```
-▲ Next.js 15.x
-- Local: http://localhost:3000
-```
+## Local development (Windows)
 
-leave this terminal running too.
+Built and run locally requiring Python and Node.js. Three rules will save you an afternoon:
 
----
+1. **Install Prerequisites first.** You need Python 3.10+, Node.js 18+. Install [Tesseract OCR for Windows](https://github.com/UB-Mannheim/tesseract/wiki) and [Poppler for Windows](https://github.com/oschwartz10612/poppler-windows/releases/), and add their `bin` folders to your System PATH. You also need a free Groq API key and a MongoDB URI.
+2. **Set up the Backend in its own environment.** Navigate to the `backend` folder, create a Python virtual environment (`python -m venv venv`), activate it, and install dependencies (`pip install -r requirements.txt`). Create a `.env` file from `.env.example` with your keys.
+3. **Run two terminals simultaneously.** You need one for the backend server and one for the Next.js frontend.
 
-### Step 4: Open the App
+```powershell
+# Terminal 1: Start Backend
+cd backend
+python -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt
+copy .env.example .env
+uvicorn main:app --reload --port 8000
 
-open http://localhost:3000 in your browser. that's it.
-
-- **dashboard** is at `/` --> shows all claims
-- **submit a claim** at `/submit` --> fill the form, upload documents, get a decision
-- **claim details** at `/claims/{id}` --> see full breakdown of any claim
-
-the backend api docs are at http://localhost:8000/docs if you want to test endpoints directly.
-
----
-
-### Quick Reference (all 3 commands)
-
-terminal 1 (mongodb --> skip if using atlas):
-```bash
-brew services start mongodb-community
+# Terminal 2: Start Frontend
+cd frontend
+npm install
+npm run dev
 ```
 
-terminal 2 (backend):
-```bash
-cd backend && source venv/bin/activate && uvicorn main:app --reload --port 8000
-```
-
-terminal 3 (frontend):
-```bash
-cd frontend && npm run dev
-```
+Open http://localhost:3000 in your browser to view the app. The backend API docs are available at http://localhost:8000/docs.
 
 ## How It Works
 
@@ -279,9 +159,12 @@ plum/
 
 ## API Endpoints
 
+**Swagger Docs:** [https://plum-backend-dqg6.onrender.com/docs](https://plum-backend-dqg6.onrender.com/docs)
+
 | Method | Endpoint | What it does |
 |--------|----------|-------------|
 | `GET` | `/` | health check |
+| `POST` | `/api/upload` | upload a document file |
 | `POST` | `/api/claims` | submit a claim with file uploads (multipart form) |
 | `POST` | `/api/claims/test` | submit a claim with structured json (for test cases) |
 | `GET` | `/api/claims` | list all claims |
@@ -300,14 +183,28 @@ the rule engine checks 6 things in order. if any check fails, it stops:
 
 co-pay (10% on consultations) and network discounts (20%) are applied during the limits step.
 
-## Assumptions
+## Engineering assumptions
 
-- doctor registration numbers follow format: `XX/NNNNN/YYYY`
-- name matching is fuzzy --> checks if any word overlaps
-- fraud detection is basic --> checks frequency and amount thresholds
-- medical necessity check verifies a diagnosis exists
-- groq model: `llama-3.1-8b-instant`
-- all amounts in inr
+| Area | Implementation Detail |
+|---|---|
+| **Doctor Registration** | Numbers follow format: `XX/NNNNN/YYYY` |
+| **Name Matching** | Fuzzy matching; checks if any word overlaps rather than strict equality. |
+| **Fraud Detection** | Basic heuristics checking frequency and amount thresholds. |
+| **Medical Necessity** | Verifies that a diagnosis exists to justify the treatment. |
+| **AI Model** | Extractor uses `llama-3.1-8b-instant` via Groq. |
+| **Currency** | All amounts are processed in INR. |
+
+## Test suite
+
+`test_cases.json` contains 10 assignment scenarios provided by Plum. The integration runner feeds each case through the synchronous endpoint and asserts on decision, amount, and reason codes.
+
+```bash
+# Make sure the backend is running on port 8000
+cd backend
+python run_tests.py
+```
+
+The script will output a one-liner for each test case indicating pass/fail status and save the full results to `test_results.json`.
 
 ## Upload Handling in Deployment (Free Tier)
 
@@ -370,14 +267,7 @@ graph TB
     style POLICY fill:#34d399,color:#000
 ```
 
-## API Endpoints
 
-| Method | Endpoint | What it does |
-|--------|----------|-------------|
-| `POST` | `/api/upload` | upload a document file |
-| `POST` | `/api/claims` | submit a new claim (triggers full pipeline) |
-| `GET` | `/api/claims` | list all claims |
-| `GET` | `/api/claims/{id}` | get one claim with full details |
 
 ## Data Flow
 
