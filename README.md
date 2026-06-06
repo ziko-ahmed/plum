@@ -2,6 +2,8 @@
 
 Automated system for processing and deciding on OPD insurance claims. Upload medical documents, the system reads them, checks against policy rules, and returns an approve/reject decision with reasoning.
 
+# Video Explanation & Demo: https://drive.google.com/file/d/1J6HK4wxk0uN2QRXaPSfYOfg6jPq2AjLr/view?usp=drive_link
+
 ## Running the Project
 
 need 3 things running at the same time: mongodb, the backend, and the frontend.
