@@ -1,0 +1,114 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// yeh hai to standardize our states and types
+
+// claim status are according to its lifecyle
+enum ClaimStatus {
+  PENDING
+  PROCESSING
+  APPROVED
+  REJECTED
+  PARTIAL
+  MANUAL_REVIEW
+}
+
+// decision is according to its final outcome
+enum Decision {
+  APPROVED
+  REJECTED
+  PARTIAL
+  MANUAL_REVIEW
+}
+
+enum DocumentType {
+  PRESCRIPTION
+  BILL
+  DIAGNOSTIC_REPORT
+  PHARMACY_BILL
+  OTHER
+}
+
+// models for data tables 
+
+model Member {
+  id          String   @id @default(cuid())
+  memberId    String   @unique
+  name        String
+  joinDate    DateTime
+  annualLimit Float    @default(50000)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("members")
+}
+
+model Claim {
+  id                    String      @id @default(cuid())
+  memberId              String
+  memberName            String
+  treatmentDate         DateTime
+  claimAmount           Float
+  hospital              String?
+  cashlessRequest       Boolean     @default(false)
+  memberJoinDate        DateTime?
+  previousClaimsSameDay Int?        @default(0)
+  status                ClaimStatus @default(PENDING)
+
+  // Relationships
+  // one claim can have many documents
+  // one claim can have zero adjudication
+  documents             Document[]
+  adjudication          Adjudication?
+
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+
+  @@map("claims")
+}
+
+model Document {
+  id            String       @id @default(cuid())
+  claimId       String
+  documentType  DocumentType
+  fileName      String
+  mimeType      String
+  extractedText String?      @db.Text
+  parsedData    Json?
+
+  // Relationship back to Claim
+  claim         Claim        @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  
+  createdAt     DateTime     @default(now())
+
+  @@map("documents")
+}
+
+model Adjudication {
+  id               String    @id @default(cuid())
+  claimId          String    @unique
+  decision         Decision
+  approvedAmount   Float?
+  rejectedItems    Json?
+  rejectionReasons Json?
+  deduction        Json?
+  confidenceScore  Float
+  flags            Json?
+  notes            String?   @db.Text
+  nextSteps        String?   @db.Text
+  aiReasoning      String?   @db.Text
+  networkDiscount  Float?
+
+  // Relationship back to Claim
+  claim            Claim     @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  
+  createdAt        DateTime  @default(now())
+
+  @@map("adjudications")
+}

@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: plum_user
+      POSTGRES_PASSWORD: plum_password
+      POSTGRES_DB: plum_adjudication
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U plum_user -d plum_adjudication"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://plum_user:plum_password@postgres:5432/plum_adjudication?schema=public
+      # The .env file in your root directory will automatically supply the GEMINI_API_KEY
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    # We override the CMD to ensure the database schema is pushed and seeded before starting the server
+    command: >
+      sh -c "npx prisma db push && 
+             npx prisma db seed && 
+             npm start"
+
+volumes:
+  postgres_data:
